@@ -1,0 +1,299 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Symbo Privilege · Implementation guide</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f6f2;color:#18312a;font:15px/1.7 'Segoe UI',Arial,sans-serif}aside{position:fixed;inset:0 auto 0 0;width:264px;overflow:auto;padding:30px 20px;background:#0c251e;color:white}aside h3{font-size:23px;margin:0 0 8px}aside p{font-size:12px;color:#a5c1b7}aside a{display:block;color:#bdd0c8;text-decoration:none;padding:8px 0;font-size:12px;line-height:1.5;border-bottom:1px solid #ffffff12}aside a:hover{color:#fdd340}main{max-width:1110px;margin-left:264px;padding:44px 55px 100px}h1{font-size:43px;line-height:1.1;letter-spacing:-1.6px;font-weight:600;max-width:680px;margin:0 0 24px}h2{font-size:26px;line-height:1.3;padding-top:28px;border-top:1px solid #ccd9d2;margin:48px 0 18px;scroll-margin-top:25px}h3{font-size:20px}a{color:#006d49;text-underline-offset:3px}table{width:100%;border-collapse:collapse;font-size:13px;margin:22px 0;background:white}th,td{padding:12px 14px;text-align:left;border:1px solid #d5e1da;vertical-align:top}th{background:#e2eee6}li{margin:8px 0}code{font:12px/1.6 Consolas,monospace;background:#e3eae3;border-radius:4px;padding:3px 5px;overflow-wrap:anywhere}pre{padding:20px;background:#112a21;color:#d4f4dd;overflow:auto;border-radius:12px}pre code{padding:0;background:none;color:inherit;font-size:13px}strong{color:#123c2c}p{max-width:840px}.badge{display:inline-block;background:#e3eddc;color:#234a34;font-size:11px;letter-spacing:1px;border-radius:50px;padding:7px 12px;margin-bottom:24px}blockquote{border-left:3px solid #00a16f;margin:20px 0;padding-left:20px}@media(max-width:850px){aside{position:static;width:auto}aside nav{display:none}main{margin:0;padding:32px 20px}h1{font-size:34px}table{display:block;overflow:auto}}@media print{aside{display:none}main{margin:0;max-width:none;padding:10px}h1{font-size:30px}h2{break-after:avoid}table,pre{break-inside:avoid}a{color:#18312a}body{background:white;font-size:11px}}</style></head><body><aside><h3>Symbo Privilege</h3><p>DIWALI 2026 · IMPLEMENTATION</p><nav><a href="#step-0">What is included</a><a href="#step-1">What you need first</a><a href="#step-2">1. Open the original Google Sheet</a><a href="#step-3">2. Install the Apps Script files</a><a href="#step-4">3. Prepare test records only</a><a href="#step-5">4. Deploy the Apps Script backend</a><a href="#step-6">5. Put the package in a private GitHub repository</a><a href="#step-7">6. Connect and deploy Netlify</a><a href="#step-8">7. Generate personal invitation links</a><a href="#step-9">8. Run the live acceptance test using the test IDs</a><a href="#step-10">9. Prepare the 31 real P1 recipients</a><a href="#step-11">10. Produce the printed QR codes</a><a href="#step-12">11. Operate the campaign</a><a href="#step-13">12. Common fixes</a><a href="#step-14">Optional local checks</a><a href="#step-15">Official setup references</a></nav></aside><main><span class="badge">NETLIFY + GOOGLE SHEETS + APPS SCRIPT</span><h1>Symbo Privilege · implementation guide</h1>
+<p>Prepared 19 October 2026. Start here after extracting this package on Windows.</p>
+<p>This package implements your Diwali card journey using <strong>Netlify + Apps Script + your private Google Sheet</strong>. It preserves the supplied black, green and warm yellow design, diya artwork and Symbo logo. No OTP is used. WhatsApp and calls go to <strong>+91 86579 18455</strong>.</p>
+<p><strong>Status:</strong> implementation files created and tested with local fictional fixtures. No Netlify site or Apps Script web app has been deployed by this package. No live customer requests have been submitted. The existing sheet has not been restructured by this task; you run the setup below to create its operational tabs.</p>
+<h2 id="step-0">What is included</h2>
+<table>
+<thead>
+<tr>
+<th>File or folder</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>public/</code></td>
+<td>Mobile-first customer page, form, review, confirmation and supplied artwork</td>
+</tr>
+<tr>
+<td><code>netlify/functions/privilege.mjs</code></td>
+<td>Private server connection from the page to Apps Script</td>
+</tr>
+<tr>
+<td><code>netlify.toml</code></td>
+<td>Hosting and function configuration, plus browser security headers</td>
+</tr>
+<tr>
+<td><code>apps-script/Code.gs</code></td>
+<td>Sheet setup, secure QR tokens, eligibility, request saving and duplicate protection</td>
+</tr>
+<tr>
+<td><code>apps-script/appsscript.json</code></td>
+<td>Timezone and minimal spreadsheet/UI permissions</td>
+</tr>
+<tr>
+<td><code>tools/make_qr.py</code></td>
+<td>Optional private CSV-to-QR-image generator</td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td>Automated tests using fictional records; no real data or cloud access</td>
+</tr>
+<tr>
+<td><code>IMPLEMENTATION-GUIDE.html</code></td>
+<td>Browser-friendly version of this guide</td>
+</tr>
+</tbody></table>
+<h2 id="step-1">What you need first</h2>
+<ul>
+<li>A Google account with <strong>edit access</strong> to the existing campaign spreadsheet and permission to deploy an Apps Script web app accessible to <strong>Anyone</strong>. Prefer a company-owned account for operations.</li>
+<li>A Netlify account and a private GitHub repository you can connect to it.</li>
+<li>A campaign owner and someone answering the concierge number.</li>
+<li>Final redemption expiry, service scope, availability, cancellation rules and approved terms/privacy wording before real invitations are activated.</li>
+<li>Optional: Node.js 22 or later to run the local checks/visual demo. Python is needed only for the optional QR-image helper.</li>
+</ul>
+<p>You do not need a WhatsApp API account or an OTP provider. Use the included Netlify address initially. Custom domains may cost extra. Check the Netlify account&#39;s current free allowance and billing controls; this is a small campaign implementation, not an unlimited hosting promise.</p>
+<h2 id="step-2">1. Open the original Google Sheet</h2>
+<p>Open <a href="https://docs.google.com/spreadsheets/d/10zMXtm79Iri3OruEj7Z9Kz23iqbxygI1Od0tg2uKXFo/edit">Symbo Privilege — Diwali 2026</a>.</p>
+<p>Your last verified structure is <code>Sheet1</code>, with four test entries first and 31 P1 contacts below. Keep those records. <strong>Do not upload a recipient CSV or workbook into the website repository.</strong></p>
+<p>The setup script copies the first six columns into a new <code>Recipients</code> tab once. <code>Sheet1</code> remains unchanged. After setup, <strong>Recipients becomes the operational master</strong>: later edits in Sheet1 will not automatically sync. Make recipient changes in Recipients thereafter.</p>
+<h2 id="step-3">2. Install the Apps Script files</h2>
+<ol>
+<li>In the spreadsheet, choose <strong>Extensions → Apps Script</strong>.</li>
+<li>Open <code>apps-script/Code.gs</code> from this package in Notepad or a code editor.</li>
+<li>Copy its complete contents into the Apps Script editor&#39;s <code>Code.gs</code>, replacing the default starter function. If this spreadsheet already contains an unrelated Apps Script project, preserve that project and add the campaign code as a separate script file after checking function-name conflicts.</li>
+<li>In the editor&#39;s <strong>Project Settings</strong>, enable <strong>Show appsscript.json manifest file in editor</strong>.</li>
+<li>Open the manifest and replace its content with <code>apps-script/appsscript.json</code> from the package. For a pre-existing project, merge timezone/runtime/scopes with its existing requirements rather than removing other scopes.</li>
+<li>Save. Name the project <strong>Symbo Privilege — Diwali 2026</strong>.</li>
+<li>Choose <code>setupCampaign</code> from the function dropdown and click <strong>Run</strong>.</li>
+<li>Authorise with the company Google account that can edit the sheet. Complete Google&#39;s normal authorisation process. If Workspace policy blocks the deployment, ask your administrator to enable the approved route.</li>
+<li>Return to the sheet and reload it.</li>
+</ol>
+<p><strong>Expected result:</strong> new tabs <code>Recipients</code>, <code>Requests</code>, <code>Settings</code>, plus a <strong>Symbo Privilege</strong> menu. The source <code>Sheet1</code> stays intact. Re-running setup does not overwrite populated recipient tabs or settings.</p>
+<p>Setup also stores <code>SPREADSHEET_ID</code> and generates <code>BACKEND_SECRET</code> in <strong>Apps Script → Project Settings → Script properties</strong>. Keep the secret private; you will copy it to Netlify in step 6. It is deliberately absent from the downloaded package.</p>
+<h2 id="step-4">3. Prepare test records only</h2>
+<p>Open <code>Recipients</code>. The first six columns match the original sheet, followed by:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Test configuration / meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>QRToken</td>
+<td>Leave blank; generated once by the menu</td>
+</tr>
+<tr>
+<td>AllowedServices</td>
+<td><code>ac,clean,pest,shoe,wash</code>; change per person if required</td>
+</tr>
+<tr>
+<td>MaxRedemptions</td>
+<td><code>1</code> by default; number of service requests, not number of all five services</td>
+</tr>
+<tr>
+<td>ValidUntil</td>
+<td>Enter a future date in <code>YYYY-MM-DD</code>, using an actual agreed expiry for live records</td>
+</tr>
+<tr>
+<td>Active</td>
+<td>TRUE for the four test IDs, FALSE for real P1s initially</td>
+</tr>
+<tr>
+<td>QRURL</td>
+<td>Generated after the Netlify URL is known</td>
+</tr>
+<tr>
+<td>CardIssued</td>
+<td>Manual tracking field; does not activate or deactivate a card</td>
+</tr>
+</tbody></table>
+<p>For all four <code>SYM-TEST-0001</code> through <code>SYM-TEST-0004</code> records, enter a <strong>future test expiry</strong>. Use your own callback mobile when testing the form. The fictional sample email addresses need not be replaced to test; this implementation does not send email or use registered email/mobile as authentication.</p>
+<p><code>Settings</code> starts with <code>CampaignMode=TEST</code>, <code>CampaignActive=TRUE</code>, <code>LaunchApproved=FALSE</code>. TEST rejects every real P1 even if someone accidentally switches that row&#39;s Active value to TRUE. Blank expiry blocks submission; the script does not invent a commercial expiry.</p>
+<h2 id="step-5">4. Deploy the Apps Script backend</h2>
+<ol>
+<li>In Apps Script, select <strong>Deploy → New deployment</strong>.</li>
+<li>Choose the <strong>Web app</strong> deployment type.</li>
+<li>Set <strong>Execute as: Me</strong>.</li>
+<li>Set <strong>Who has access: Anyone</strong> (anonymous access, where your Workspace permits it).</li>
+<li>Deploy and authorise if prompted.</li>
+<li>Copy the <strong>Web app URL ending <code>/exec</code></strong> into your private setup notes.</li>
+</ol>
+<p>Do not use the <code>/dev</code> URL or the editor URL. An unauthenticated GET visit to <code>/exec</code> returns a small JSON message saying to use the concierge website; this is normal. The website sends authenticated POST requests through the Netlify Function. <strong>Keep the Google Sheet private</strong>; do not publish it to the web or share it with everyone.</p>
+<h2 id="step-6">5. Put the package in a private GitHub repository</h2>
+<p>The repository root must directly contain <code>public</code>, <code>netlify</code>, <code>netlify.toml</code> and <code>package.json</code>. Avoid an extra enclosing <code>symbo-privilege/</code> folder inside the repository root.</p>
+<p>An easy Windows route is GitHub Desktop:</p>
+<ol>
+<li>Install/open GitHub Desktop and sign in.</li>
+<li>Choose <strong>File → New repository</strong>, name it <code>symbo-privilege</code> and select a local folder.</li>
+<li>Copy the extracted package contents into that folder.</li>
+<li>Commit the files.</li>
+<li>Select <strong>Publish repository</strong> and keep it <strong>private</strong>.</li>
+</ol>
+<p>Never copy real customer exports, QR token lists, secrets, the original pasted chat transcript or the source workbook into this repository. The original pasted transcript is not included in this package.</p>
+<h2 id="step-7">6. Connect and deploy Netlify</h2>
+<ol>
+<li>In Netlify, choose <strong>Add new project / Import an existing project</strong> and select the private GitHub repository.</li>
+<li>Base directory: leave blank when the package is at the repository root.</li>
+<li>Build command: leave blank. This plain HTML/JS site has no frontend build step.</li>
+<li>Publish directory: <code>public</code>.</li>
+<li>Functions directory: <code>netlify/functions</code> (already specified in <code>netlify.toml</code>).</li>
+<li>Add the following environment variables in Netlify&#39;s project settings. Make them available to <strong>Functions</strong> in the production context (or all scopes if the UI only offers that choice).</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Environment variable</th>
+<th>Exact value to copy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>APPS_SCRIPT_URL</code></td>
+<td>The Google Apps Script web-app URL ending <code>/exec</code></td>
+</tr>
+<tr>
+<td><code>BACKEND_SECRET</code></td>
+<td>The generated value in Apps Script Project Settings → Script properties</td>
+</tr>
+</tbody></table>
+<ol start="7">
+<li>Deploy. After changing environment variables later, create a <strong>new deploy</strong> for them to take effect.</li>
+<li>Check Netlify&#39;s Functions list: <code>privilege</code> should appear. The frontend calls <code>/api/privilege</code>.</li>
+<li>Copy the production HTTPS address, for example the actual <code>your-project.netlify.app</code> URL Netlify gives you. Do not copy a Deploy Preview or branch URL for printed cards.</li>
+</ol>
+<p>A static drag-and-drop upload of only <code>public/</code> will not deploy the server function. Use the Git-connected route above. The normal site root shows an invitation-only message; the cosmetic preview is <code>/?demo=1</code>. The preview uses a fictional recipient and never saves requests.</p>
+<h2 id="step-8">7. Generate personal invitation links</h2>
+<ol>
+<li>In the sheet&#39;s <code>Settings</code> tab, set <code>WebsiteURL</code> to the <strong>final HTTPS Netlify origin</strong>, with no path or query. A trailing slash is fine.</li>
+<li>Choose <strong>Symbo Privilege → 2. Generate missing tokens and QR links</strong>.</li>
+<li>The script fills <code>QRToken</code> and <code>QRURL</code> for existing recipients. IDs already present are preserved. Future blank IDs are generated once and remain stable when rows move.</li>
+<li>Copy a <strong>test recipient&#39;s QRURL</strong> into a browser to test it.</li>
+<li>Re-running link generation preserves tokens. Do not manually replace issued tokens. If you change the website domain later, the generated links change and existing printed cards will still point at the old domain.</li>
+</ol>
+<p>Every QR uses a random 64-character token, not the sequential ID. The page displays the name and privileges linked to that token, but does not return the stored email or phone. There is no OTP: anyone holding an invitation link can act with its entitlement. Your concierge should verify identity before fulfilment. Treat QR URLs and print exports as private invitations.</p>
+<h2 id="step-9">8. Run the live acceptance test using the test IDs</h2>
+<p>Keep <code>CampaignMode=TEST</code> throughout this checklist. This is a real deployed test flow writing only to test records.</p>
+<ol>
+<li>Open <code>SYM-TEST-0001</code>&#39;s generated QRURL while signed out of Google, or in a private browser window. You should see the welcome name, ID, five choices and TEST banner.</li>
+<li>Choose a service and option, then enter your own mobile and non-sensitive test address, valid pincode, future dates and a callback window. Use the form&#39;s review page to inspect the request.</li>
+<li>Tick the consent checkbox and select <strong>Request my privilege</strong>.</li>
+<li>Check that a new <code>Requests</code> row exists with <code>Status=New</code>, <code>TestRecord=TRUE</code> and a request reference matching the success screen.</li>
+<li>Do not open WhatsApp yet. The request must already be in the sheet.</li>
+<li>Open <strong>Message your concierge</strong> and check the destination and prefilled service/request/Privilege ID. Opening the link does not send the message; leave it unsent unless you intend to message the team.</li>
+<li>Reopen that recipient&#39;s original QRURL. It should say the privilege has already been requested.</li>
+<li>Test the other sample IDs for invalid consent, wrong phone, invalid pincode, inactive and expired invitations. An invalid or expired invitation must not create a request row.</li>
+<li>To test restrictions, set a test row&#39;s AllowedServices to <code>ac,shoe</code>, reload its QRURL and verify only those services appear.</li>
+<li>Test on an Android phone and an iPhone, including after scanning a printed sample. Check mobile layout, logo, dates, error messages and keyboard behaviour.</li>
+</ol>
+<p>To retry the <strong>same unchanged request after an uncertain save</strong>, press the request button again. The backend reuses the prior reference if the first write succeeded. A second request with a new retry key is rejected once the allowance is used.</p>
+<p>To repeat a finished test, increase <strong>only that test recipient&#39;s MaxRedemptions</strong> by one. Keep the earlier test request for traceability. Do not delete live requests to restore allowances.</p>
+<p><strong>Verification provided in this package:</strong> 16 local automated tests passed, covering setup preservation, token stability, eligibility, expiry, service restrictions, input validation, consent, campaign mode, idempotency, uncertain write recovery, formula escaping and proxy failures. These use in-memory Google service fixtures. They do not replace the deployed tests above. Browser layout and actual Google/Netlify deployment were not verified in this environment.</p>
+<h2 id="step-10">9. Prepare the 31 real P1 recipients</h2>
+<p>The source P1 list had no emails or mobile numbers, and 19 designations were blank. You can still accept requests because the form collects a callback mobile and the concierge manually verifies identity. Add verified contact details privately in <code>Recipients</code> where useful; there is no need to invent or publish them.</p>
+<p>Before live launch:</p>
+<ul>
+<li>Set each approved person&#39;s AllowedServices, MaxRedemptions, actual ValidUntil and Active=TRUE.</li>
+<li>Confirm one service per person is the intended offer, along with dry/wet AC scope, BHK cleaning/pest scope, eligible shoes/car types, location, extras, cancellation/rescheduling and transferability rules.</li>
+<li>Replace/approve <code>TermsText</code> and <code>PrivacyText</code> in Settings. Include the appropriate legal entity/contact, how booking details reach the fulfilment partner, retention and customer rights information. These are draft operational text, not a legal approval.</li>
+<li>Enter an approved <code>PolicyVersion</code>, such as your internal approved revision identifier. The request records the version accepted.</li>
+<li>Set <code>CallbackPromise</code> to wording the team can meet. No four-hour or one-day guarantee is hardcoded.</li>
+<li>Choose <code>ServiceabilityMode=MANUAL</code> unless all five services share a confirmed pincode list. MANUAL makes clear that the concierge checks availability. ALLOWLIST requires a comma-separated <code>ServicePincodes</code> list and rejects all unlisted pincodes. Separate per-service geography is not implemented; use manual checks if coverage differs.</li>
+<li>Set <code>LaunchApproved=TRUE</code>, <code>CampaignMode=LIVE</code>, <code>CampaignActive=TRUE</code> only after the test checklist passes and these inputs are approved.</li>
+</ul>
+<p>LIVE also accepts active test cards. You can set the four test rows&#39; Active values to FALSE when testing is finished.</p>
+<h2 id="step-11">10. Produce the printed QR codes</h2>
+<p>Only print after the final production URL and test flow work.</p>
+<p>Simplest route: give a trusted print vendor the <strong>PrivilegeID, QRURL and expiry</strong> for approved recipients only and ask them to generate unique QR artwork. Do not send mobile numbers, home addresses or other unnecessary data. Random tokens are bearer access credentials, so treat this print export as private.</p>
+<p>Optional local generator on Windows:</p>
+<ol>
+<li>In Google Sheets select <code>Recipients</code>, choose <strong>File → Download → Comma-separated values (.csv, current sheet)</strong>.</li>
+<li>Save under a private <code>private-exports</code> folder outside your Git repository (or use the ignored folder name in the repo).</li>
+<li>Install Python if you do not have it, then open PowerShell in the package folder.</li>
+<li>Run:</li>
+</ol>
+<pre><code class="language-powershell">py -m pip install &quot;qrcode[pil]&quot;
+py tools/make_qr.py private-exports/recipients.csv --out qr-output
+</code></pre>
+<p>By default this skips inactive records and all <code>SYM-TEST-</code> IDs. For a test proof run, add <code>--include-tests</code>. It makes a PNG per active recipient plus <code>qr-contact-sheet.html</code>. This sheet is a private QR proof/contact sheet, not final print-ready card artwork.</p>
+<p>Use a solid black QR on white with its four-module quiet zone intact. Start around 30–35 mm at this URL length and verify on the <strong>actual printed material</strong>, especially reflective metal. Keep an opaque white QR panel; do not print the QR as a low-contrast green/gold gradient. At CR80 card size (85.60 × 53.98 mm), confirm space and printer bleed/safe margins with the vendor. The supplied design-direction ZIP remains your creative reference; this package does not claim to contain approved metal-card production artwork.</p>
+<h2 id="step-12">11. Operate the campaign</h2>
+<p>Filter <code>Requests</code> by <strong>TestRecord=FALSE</strong> and <strong>Status=New</strong>. Assign someone in AssignedTo, call from the designated concierge number, verify the recipient, confirm scope/location and book manually. Update the status through Contact attempted, Customer reached, Eligibility checked, Vendor assigned, Booking confirmed and Completed. Use Cancelled or Unable to fulfil for exceptions.</p>
+<p>Set ConfirmedServiceDate and CompletedAt manually. The customer success page confirms only a saved request; it does not claim a booking is confirmed and does not provide a live booking-status tracker.</p>
+<p>All saved requests, including cancelled requests, count towards MaxRedemptions. Only an authorised operator should increase the allowance after an approved exception. There are no automatic vendor bookings, emails, SMS, WhatsApp sends, request notifications or satisfaction surveys in this build. Someone must monitor the private Requests tab.</p>
+<p>Pause new requests immediately by setting <code>Settings → CampaignActive=FALSE</code>. Restrict spreadsheet/script access to the people operating the campaign. Do not rename the operational tabs/headers or alter generated tokens during the campaign.</p>
+<h2 id="step-13">12. Common fixes</h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>What to check</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Invitation-only message at root</td>
+<td>Normal; use an actual QRURL, or <code>/?demo=1</code> for a visual-only preview</td>
+</tr>
+<tr>
+<td>Invitation is not active yet</td>
+<td>Real card in TEST mode; switch to LIVE only after launch preparation</td>
+</tr>
+<tr>
+<td>Missing/invalid expiry</td>
+<td>Fill ValidUntil with YYYY-MM-DD for that recipient</td>
+</tr>
+<tr>
+<td>Backend is being set up</td>
+<td>Netlify variables must exist in Functions scope; redeploy</td>
+</tr>
+<tr>
+<td>Invalid backend response or cannot confirm save</td>
+<td>Check /exec deployment, Anyone access, account permissions and Netlify Function logs; retry the unchanged request</td>
+</tr>
+<tr>
+<td>AUTH error</td>
+<td>Copy exactly the same BACKEND_SECRET from Apps Script properties into Netlify, then redeploy</td>
+</tr>
+<tr>
+<td>Function route 404</td>
+<td>Confirm repository root, functions directory and Git-connected deployment; do not upload only public/</td>
+</tr>
+<tr>
+<td>Already requested</td>
+<td>Find the request in Requests. For a test only, increase that test record&#39;s allowance</td>
+</tr>
+<tr>
+<td>Pincode unavailable</td>
+<td>Check MANUAL versus ALLOWLIST and the confirmed ServicePincodes value</td>
+</tr>
+<tr>
+<td>App Script code change not reflected</td>
+<td>Deploy → Manage deployments → Edit → New version → Deploy; keep the same /exec deployment URL</td>
+</tr>
+<tr>
+<td>Sheet changes not reflected</td>
+<td>Edit Recipients after setup, not Sheet1. Sheet configuration is read on every lookup/submit</td>
+</tr>
+<tr>
+<td>Terms changed during form filling</td>
+<td>Reload the original QR link and accept the current policy version</td>
+</tr>
+</tbody></table>
+<p>If your organisation does not permit an anonymous Apps Script web app, this exact architecture needs an administrator-approved alternative backend. Do not make the recipient spreadsheet public to work around that restriction.</p>
+<h2 id="step-14">Optional local checks</h2>
+<p>With Node.js 22 or later, in PowerShell at the package root:</p>
+<pre><code class="language-powershell">node --test tests/backend.test.mjs tests/proxy.test.mjs tests/setup.test.mjs
+node tools/preview.mjs
+</code></pre>
+<p>Open the local demo URL printed by the second command. It is <strong>visual-only</strong> and never writes to Google Sheets. Stop it with Ctrl+C. The local test fixtures contain fictional records only.</p>
+<h2 id="step-15">Official setup references</h2>
+<ul>
+<li><a href="https://developers.google.com/apps-script/guides/web">Google Apps Script web app deployment</a></li>
+<li><a href="https://developers.google.com/apps-script/guides/properties">Apps Script properties</a></li>
+<li><a href="https://developers.google.com/apps-script/reference/lock/lock-service">Apps Script lock service</a></li>
+<li><a href="https://developers.google.com/apps-script/guides/content">Apps Script Content Service and redirects</a></li>
+<li><a href="https://docs.netlify.com/build/functions/overview/">Netlify Functions</a></li>
+<li><a href="https://docs.netlify.com/build/functions/environment-variables/">Netlify function environment variables</a></li>
+<li><a href="https://www.netlify.com/pricing/">Netlify pricing and allowances</a></li>
+</ul>
+<p>These references were checked while preparing this guide. Menu labels and plan allowances can change; follow the equivalent controls shown in your accounts.</p>
+</main></body></html>

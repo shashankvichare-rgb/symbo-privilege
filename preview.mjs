@@ -1,0 +1,4 @@
+// Optional visual-only local preview. Backend requests are NOT available here.
+import http from 'node:http';import {readFile} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../public/',import.meta.url)),port=4173;
+http.createServer(async(req,res)=>{try{const url=new URL(req.url,'http://localhost'),file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root))throw Error();const bytes=await readFile(file);res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.vcf':'text/vcard'}[path.extname(file)]||'application/octet-stream'));res.end(bytes);}catch{res.writeHead(404);res.end('Not found');}}).listen(port,'127.0.0.1',()=>console.log('Visual demo only: http://127.0.0.1:4173/?demo=1 — no requests are saved. Ctrl+C to stop.'));

@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {createHash,randomUUID} from 'node:crypto';
+const source=readFileSync(new URL('../apps-script/Code.gs',import.meta.url),'utf8');
+const token='a'.repeat(64),other='b'.repeat(64),secret='s'.repeat(64);
+function harness(){
+ const ctx=vm.createContext({console,Date,Set});vm.runInContext(source,ctx);
+ const header=Array.from(ctx.QH);let rows=[],locked=false,failFlush=false;
+ const recipient={PrivilegeID:'SYM-TEST-0001',Name:'Aarav Mehta',Designation:'Head of Partnerships',Company:'Sample Company A',QRToken:token,AllowedServices:'ac,clean,pest,shoe,wash',MaxRedemptions:1,ValidUntil:'2099-12-31',Active:true};
+ const real={...recipient,PrivilegeID:'SYM-DIW26-0001',Name:'Real fixture only',QRToken:other,Active:false};
+ const settings={CampaignActive:'TRUE',CampaignMode:'TEST',LaunchApproved:'FALSE',ConciergeNumber:'918657918455',CallbackPromise:'We will call to arrange it.',ServiceabilityMode:'MANUAL',TermsText:'Test terms',PrivacyText:'Test privacy',PolicyVersion:''};
+ const requestSheet={getDataRange:()=>({getValues:()=>[header,...rows]}),getLastRow:()=>1+rows.length,getRange:(row,col,height,width)=>({setNumberFormat(){return this;},setValues(values){for(let i=0;i<values.length;i++)rows[row-2+i]=values[i];return this;}})};
+ const ss={getSheetByName(name){if(name==='Settings')return {getDataRange:()=>({getValues:()=>[['Key','Value','Notes'],...Object.entries(settings)]})};if(name==='Recipients')return {getDataRange:()=>({getValues:()=>[Array.from(ctx.RH),...[recipient,real].map(r=>Array.from(ctx.RH,k=>r[k]??''))]})};if(name==='Requests')return requestSheet;}};
+ ctx.PropertiesService={getScriptProperties:()=>({getProperty:key=>({BACKEND_SECRET:secret,SPREADSHEET_ID:'fixture'})[key]})};
+ ctx.SpreadsheetApp={openById:()=>ss,flush:()=>{if(failFlush){failFlush=false;throw new Error('Simulated response loss after write');}}};
+ ctx.ContentService={MimeType:{JSON:'JSON'},createTextOutput:value=>({setMimeType:()=>JSON.parse(value)})};
+ ctx.Utilities={getUuid:randomUUID,DigestAlgorithm:{SHA_256:'sha256'},computeDigest:(_,value)=>Array.from(createHash('sha256').update(value).digest()),formatDate:d=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)};
+ ctx.LockService={getScriptLock:()=>({tryLock(){if(locked)return false;locked=true;return true;},releaseLock(){locked=false;}})};
+ function send(action,request,t=token,s=secret){return ctx.doPost({postData:{contents:JSON.stringify({action,request,token:t,secret:s})}});}
+ const payload={name:'Aarav Mehta',mobile:'9876543210',service:'clean',variant:'2 BHK',city:'Mumbai',pincode:'400050',address:'Fictional test address only',preferredDate:'2099-01-01',alternateDate:'2099-01-02',callbackWindow:'10 am – 1 pm',notes:'',consent:true,policyVersion:'TEST-DRAFT',idempotencyKey:'test-idempotency-key-0001'};
+ return {ctx,send,recipient,real,settings,payload,rows,loseResponse:()=>{failFlush=true;},lock:()=>{locked=true;}};
+}
+test('valid TEST lookup exposes permitted services but no registered mobile/email or token',()=>{const h=harness(),r=h.send('lookup');assert.equal(r.ok,true);assert.equal(r.services.length,5);assert.equal(r.remaining,1);assert.equal(JSON.stringify(r).includes(token),false);assert.equal('Email' in r.recipient,false);assert.equal('Mobile' in r.recipient,false);});
+test('authentication, invalid token, inactive and expired invitations are rejected',()=>{const h=harness();assert.equal(h.send('lookup',null,token,'bad').code,'AUTH');assert.equal(h.send('lookup',null,'x').code,'INVALID');h.recipient.Active=false;assert.equal(h.send('lookup').code,'INACTIVE');h.recipient.Active=true;h.recipient.ValidUntil='2020-01-01';assert.equal(h.send('lookup').code,'EXPIRED');assert.equal(h.rows.length,0);});
+test('TEST mode blocks real recipients; LIVE requires approval and active record',()=>{const h=harness();assert.equal(h.send('lookup',null,other).code,'NOT_LIVE');h.settings.CampaignMode='LIVE';assert.equal(h.send('lookup',null,other).code,'SETUP');h.settings.LaunchApproved='TRUE';h.settings.PolicyVersion='v1';assert.equal(h.send('lookup',null,other).code,'INACTIVE');h.real.Active=true;assert.equal(h.send('lookup',null,other).ok,true);});
+test('save returns reference, retry replays same reference, allowance prevents a new request',()=>{const h=harness(),a=h.send('submit',h.payload);assert.equal(a.ok,true);assert.match(a.requestId,/^REQ-2026-/);assert.equal(h.rows.length,1);const b=h.send('submit',h.payload);assert.equal(b.replayed,true);assert.equal(b.requestId,a.requestId);assert.equal(h.rows.length,1);assert.equal(h.send('submit',{...h.payload,idempotencyKey:'test-idempotency-key-0002'}).code,'REDEEMED');assert.equal(h.send('lookup').remaining,0);});
+test('timeout after write can recover without double saving',()=>{const h=harness();h.loseResponse();assert.equal(h.send('submit',h.payload).code,'SERVER');assert.equal(h.rows.length,1);assert.equal(h.send('submit',h.payload).replayed,true);assert.equal(h.rows.length,1);});
+test('same idempotency key with changed payload is rejected',()=>{const h=harness();h.send('submit',h.payload);assert.equal(h.send('submit',{...h.payload,notes:'changed'}).code,'RETRY_CHANGED');assert.equal(h.rows.length,1);});
+test('service eligibility, variant, phone, pincode, dates, consent and policy are checked',()=>{const h=harness();for(const patch of [{service:'fake'},{variant:'4 BHK'},{mobile:'1234567890'},{pincode:'000000'},{preferredDate:'2020-01-01'},{preferredDate:'2099-02-31'},{alternateDate:h.payload.preferredDate},{consent:false},{policyVersion:'stale'},{website:'spam'}])assert.equal(h.send('submit',{...h.payload,...patch}).ok,false,JSON.stringify(patch));assert.equal(h.rows.length,0);h.recipient.AllowedServices='ac';assert.equal(h.send('submit',h.payload).code,'SERVICE');});
+test('pincode allowlist and campaign pause fail closed',()=>{const h=harness();h.settings.ServiceabilityMode='ALLOWLIST';h.settings.ServicePincodes='110001';assert.equal(h.send('submit',h.payload).code,'UNAVAILABLE');h.settings.ServicePincodes='400050,110001';assert.equal(h.send('submit',h.payload).ok,true);h.settings.CampaignActive='FALSE';assert.equal(h.send('lookup').code,'PAUSED');});
+test('malformed config, duplicate tokens and lock contention cannot submit',()=>{const h=harness();h.recipient.ValidUntil='';assert.equal(h.send('lookup').code,'SETUP');h.recipient.ValidUntil='2099-12-31';h.recipient.MaxRedemptions=1.5;assert.equal(h.send('lookup').code,'SETUP');h.recipient.MaxRedemptions=1;h.real.QRToken=token;assert.equal(h.send('lookup').code,'INVALID');h.real.QRToken=other;h.lock();assert.equal(h.send('submit',h.payload).code,'BUSY');});
+test('spreadsheet formula injection is escaped in all customer fields',()=>{const h=harness();const r=h.send('submit',{...h.payload,name:'=HYPERLINK("https://example.invalid")',notes:'@SUM(1+1)'});assert.equal(r.ok,true);assert.ok(h.rows[0][3].startsWith("'="));assert.ok(h.rows[0][13].startsWith("'@"));});
+test('cancellation does not silently restore entitlement',()=>{const h=harness();h.send('submit',h.payload);h.rows[0][15]='Cancelled';assert.equal(h.send('lookup').remaining,0);});
+test('malformed JSON and GET return safe JSON errors',()=>{const h=harness();assert.equal(h.ctx.doPost({postData:{contents:'bad'}}).code,'SERVER');assert.equal(h.ctx.doGet().code,'METHOD');});
+test('Netlify-to-Apps-Script integration saves a test fixture before returning confirmation',async()=>{
+ const {default:handler}=await import('../netlify/functions/privilege.mjs');const h=harness(),original=globalThis.fetch;
+ process.env.APPS_SCRIPT_URL='https://script.google.com/macros/s/test-deployment/exec';process.env.BACKEND_SECRET=secret;
+ globalThis.fetch=async(_,options)=>Response.json(h.ctx.doPost({postData:{contents:options.body}}));
+ const send=body=>handler(new Request('https://fixture.netlify.app/api/privilege',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://fixture.netlify.app'},body:JSON.stringify(body)}));
+ try{assert.equal((await (await send({action:'lookup',token})).json()).recipient.id,'SYM-TEST-0001');const result=await (await send({action:'submit',token,request:h.payload})).json();assert.equal(result.ok,true);assert.equal(h.rows.length,1);assert.equal(h.rows[0][0],result.requestId);const retry=await (await send({action:'submit',token,request:h.payload})).json();assert.equal(retry.requestId,result.requestId);assert.equal(h.rows.length,1);}finally{globalThis.fetch=original;}
+});

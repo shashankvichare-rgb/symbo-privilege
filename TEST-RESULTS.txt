@@ -1,0 +1,9 @@
+Verified 19 October 2026
+
+16 automated tests passed with Node.js using fictional in-memory Google service fixtures.
+Includes Netlify handler -> Apps Script request flow, save/retry, allowance, validation, TEST/LIVE mode and setup preservation.
+Static JavaScript, HTML IDs/assets/selectors, TOML and manifest JSON checks passed.
+QR helper Python syntax checked; its optional qrcode dependency was not installed here.
+
+Not verified here: real Google authorisation/deployment, Netlify deployment, live-sheet submission, browser/mobile rendering, physical QR scan. Follow acceptance steps in the guide before printing.
+No real customer records, registered contact data, backend secrets or generated recipient tokens are included in this package.
