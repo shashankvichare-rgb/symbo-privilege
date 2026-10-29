@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090a09">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Choose a complimentary Diwali privilege and let your Symbo Concierge arrange it.">
+  <title>Symbo Concierge | Your Festive Privileges</title>
+  <link rel="icon" href="assets/symbo-mark.png">
+  <link rel="stylesheet" href="styles.css?v=20261029">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <button class="icon-button" id="backButton" type="button" aria-label="Go back" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <img class="brand-logo" src="assets/symbo-logo-on-dark.png" alt="Symbo">
+    <div class="header-spacer"></div>
+    <div class="step-status" id="stepStatus" hidden>
+      <span id="stepText">Step 1 of 3</span>
+      <span class="step-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+    <span class="privilege-chip" id="privilegeChip">Privilege access</span>
+  </header>
+
+  <main id="main" class="shell" tabindex="-1">
+    <section class="screen welcome-screen is-active" data-screen="welcome" aria-labelledby="welcome-title">
+      <div class="hero-grid">
+        <div class="diya-stage" aria-hidden="true">
+          <div class="diya-orbit"></div>
+          <div class="diya-glow"></div>
+          <img src="assets/diya.png" alt="">
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">A festive gift for you</p>
+          <p class="welcome-name" id="welcomeName" hidden></p>
+          <h1 id="welcome-title">This Diwali, let Symbo do the heavy lifting.</h1>
+          <p class="lede" id="heroDescription">Enjoy one complimentary service, chosen from a selection curated exclusively for you. Your Symbo Concierge will help arrange the rest.</p>
+          <div class="gift-icons" aria-label="Explore home cleaning, AC servicing, pest control, shoe cleaning and car wash"><span data-gift-icon="clean"></span><span data-gift-icon="ac"></span><span data-gift-icon="pest"></span><span data-gift-icon="shoe"></span><span data-gift-icon="wash"></span></div>
+          <div id="recipientSummary" class="summary-strip" hidden></div>
+        </div>
+      </div>
+
+      <section class="section-block" aria-labelledby="how-title">
+        <p class="eyebrow">How it works</p>
+        <h2 id="how-title">Three steps. Leave the rest to us.</h2>
+        <div class="how-grid">
+          <article class="glass-card"><b>01</b><h3>Choose</h3><p>Pick the one service that would help most this festive season.</p></article>
+          <article class="glass-card"><b>02</b><h3>Share</h3><p>Tell us where, when and how you would like us to call.</p></article>
+          <article class="glass-card"><b>03</b><h3>Relax</h3><p>Your Symbo Concierge confirms the details and coordinates the service.</p></article>
+        </div>
+      </section>
+
+      <section class="concierge-panel" aria-labelledby="concierge-title">
+        <div>
+          <p class="eyebrow">Services curated by Symbo</p>
+          <h2 id="concierge-title">One concierge, start to finish.</h2>
+          <p>Your Symbo Concierge will confirm availability in your area, what’s included and your preferred timing.</p>
+        </div>
+        <div class="contact-card">
+          <p>Your concierge will call from</p>
+          <a class="phone-number" href="tel:+918657918455">+91 86579 18455</a>
+          <small>Save it now so you know it’s us.</small>
+          <div class="button-row">
+            <a class="button button-light" href="Symbo-Concierge.vcf" download>Save contact</a>
+            <a class="button button-outline whatsapp-help" href="#">WhatsApp us</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq-section" aria-labelledby="faq-title">
+        <div class="faq-heading">
+          <p class="eyebrow">Good to know</p>
+          <h2 id="faq-title">Questions, answered.</h2>
+        </div>
+        <div class="faq-list">
+          <details><summary>Is there anything to pay?</summary><p>Your chosen service is complimentary within its stated coverage. For Home Cleaning and Pest Control, Symbo covers the cost up to the 2 BHK service. For a home of 3 BHK or larger, your concierge will share a quote for the additional amount before arranging the service. You can decide whether to proceed. Other exclusions and conditions apply.</p></details>
+          <details><summary>How many services can I choose?</summary><p>Your Privilege Card can be used once to request one complimentary service from the available choices.</p></details>
+          <details><summary>When will someone call me?</summary><p>After your request is saved, a Symbo Concierge will call you from +91 86579 18455 to confirm the details.</p></details>
+          <details><summary>Is the service confirmed immediately?</summary><p>Your request is recorded on this website. The booking is confirmed only after the concierge checks your location, scope and preferred dates.</p></details>
+        </div>
+      </section>
+    </section>
+
+    <section class="screen flow-screen" data-screen="choose" aria-labelledby="choose-title" hidden>
+      <div class="flow-heading">
+        <p class="eyebrow">Your festive privilege</p>
+        <h1 id="choose-title">What would make life easier this Diwali?</h1>
+        <p>Pick one complimentary service. Your concierge takes it from there.</p>
+      </div>
+      <p class="service-help">Your festive gift: one complimentary service. Check benefits and exclusions before choosing.</p>
+      <div class="service-list" id="serviceList" role="group" aria-label="Available privileges"></div>
+      <div class="sticky-action"><button class="button button-primary button-wide" id="chooseContinue" type="button">Continue <span aria-hidden="true">→</span></button></div>
+    </section>
+
+    <section class="screen flow-screen" data-screen="details" aria-labelledby="details-title" hidden>
+      <div class="flow-heading compact">
+        <button class="selected-service" type="button" data-action="change-service"><span id="selectedIcon"></span><span id="selectedLabel"></span><b>Change</b></button>
+        <button class="text-button service-details-link" type="button" data-current-service-info>ⓘ View service inclusions &amp; exclusions</button>
+        <h1 id="details-title">Lovely. Where should we arrange it?</h1>
+        <p>Your card details are already filled in. Add your location and preferences; we’ll contact you to arrange the service.</p>
+      </div>
+
+      <form id="requestForm" novalidate>
+        <fieldset>
+          <legend>Your details</legend>
+          <div class="field-grid two-col">
+            <label class="field"><span>Name</span><input id="fullName" name="fullName" readonly><small class="field-error"></small></label>
+            <label class="field"><span>Company Name</span><input id="company" name="company" readonly></label>
+          </div>
+          <p class="field-hint" id="contactHint">Something incorrect? Contact your concierge before submitting.</p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Service location</legend>
+          <div class="field-grid two-col narrow-first">
+            <label class="field"><span>Pincode</span><input id="pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" maxlength="6" required placeholder="6 digits"><small class="field-error"></small></label>
+            <label class="field"><span>City</span><input id="city" name="city" autocomplete="address-level2" required placeholder="e.g. Mumbai"><small class="field-error"></small></label>
+          </div>
+          <label class="field"><span>Address</span><textarea id="address" name="address" autocomplete="street-address" rows="3" required placeholder="Flat, building, street and landmark"></textarea><small class="field-error"></small></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Preferred timing</legend>
+          <div class="field-grid two-col">
+            <label class="field"><span>Preferred date</span><input id="dateOne" name="dateOne" type="date" required><small class="field-error"></small></label>
+            <label class="field"><span>Alternate date <i>Optional</i></span><input id="dateTwo" name="dateTwo" type="date"><small class="field-error"></small></label>
+          </div>
+          <div class="field"><span>Best time for us to call</span><div class="pill-row" id="callWindows" role="radiogroup" aria-label="Preferred callback time"></div><small class="field-error" id="callError"></small></div>
+          <label class="field"><span>Anything else we should know? <i>Optional</i></span><textarea id="notes" name="notes" rows="3" maxlength="300" placeholder="Access instructions, a question or a useful detail"></textarea></label>
+        </fieldset>
+
+        <label class="consent-row"><input id="consent" type="checkbox" required><span>I agree that Symbo may contact me by phone or WhatsApp to coordinate this service. I accept the <button type="button" class="text-button" data-dialog="terms">privilege terms</button> and <button type="button" class="text-button" data-dialog="privacy">privacy note</button>.</span></label>
+        <p class="field-error consent-error" id="consentError"></p>
+        <div class="sticky-action"><button class="button button-primary button-wide" type="submit">Review my request <span aria-hidden="true">→</span></button></div>
+      </form>
+    </section>
+
+    <section class="screen flow-screen" data-screen="review" aria-labelledby="review-title" hidden>
+      <div class="flow-heading">
+        <p class="eyebrow">One quick review</p>
+        <h1 id="review-title">Everything look right?</h1>
+        <p>Submit below to save your request with the Symbo Concierge.</p>
+      </div>
+      <div class="review-card" id="reviewCard"></div>
+      <button class="text-button service-details-link" type="button" data-current-service-info>ⓘ Review service inclusions &amp; exclusions</button>
+      <div class="whatsapp-note">
+        <span aria-hidden="true">✓</span>
+        <p><strong>Your concierge will confirm the booking.</strong> This is a service request, not a confirmed appointment. For homes of 3 BHK or larger, the concierge will quote the amount above the 2 BHK coverage before booking.</p>
+      </div>
+      <div class="review-actions">
+        <button class="button button-outline button-wide" type="button" data-action="edit-details">Edit details</button>
+        <button class="button button-primary button-wide" id="submitRequest" type="button">Submit my request</button>
+      </div>
+      <p class="field-error" id="submitError" role="alert"></p>
+    </section>
+
+    <section class="screen flow-screen success-screen" data-screen="success" aria-labelledby="success-title" hidden>
+      <div class="success-mark" aria-hidden="true">✓</div>
+      <p class="eyebrow">Request received</p>
+      <h1 id="success-title">Leave the next step to us.</h1>
+      <p>Your request has been saved. Your Symbo Concierge will call from <a href="tel:+918657918455">+91 86579 18455</a> to check availability and arrange your service.</p>
+      <div class="summary-strip" id="successSummary"></div>
+      <a class="button button-primary button-wide" id="openWhatsappAgain" href="#" target="_blank" rel="noopener noreferrer">Follow up on WhatsApp</a>
+      <a class="button button-outline button-wide" href="tel:+918657918455">Call +91 86579 18455</a>
+      <button class="text-button restart-button" type="button" data-action="restart">Start over</button>
+    </section>
+
+    <section class="screen flow-screen error-screen" data-screen="error" aria-labelledby="error-title" hidden>
+      <div class="error-mark" aria-hidden="true">!</div>
+      <p class="eyebrow">We’re here to help</p>
+      <h1 id="error-title">We couldn’t open this privilege.</h1>
+      <p id="errorCopy">The QR link may be incomplete. Message us with the Privilege ID printed on your card and we’ll help.</p>
+      <a class="button button-primary button-wide whatsapp-help" href="#">Message your concierge</a>
+      <a class="button button-outline button-wide" href="tel:+918657918455">Call +91 86579 18455</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Symbo Privilege · Diwali 2026</span>
+    <nav aria-label="Support links"><a class="whatsapp-help" href="#">WhatsApp help</a><button class="text-button" type="button" data-dialog="privacy">Privacy</button><button class="text-button" type="button" data-dialog="terms">Terms</button></nav>
+  </footer>
+
+  <div id="welcomeSticky" class="welcome-sticky" hidden>
+    <button class="button button-primary button-wide" type="button" data-action="start">Choose my privilege <span aria-hidden="true">→</span></button>
+  </div>
+
+  <dialog id="infoDialog" aria-labelledby="dialogTitle">
+    <div class="dialog-inner">
+      <button class="dialog-close" type="button" aria-label="Close">×</button>
+      <p class="eyebrow" id="dialogEyebrow">Symbo Privilege</p>
+      <h2 id="dialogTitle"></h2>
+      <div id="dialogBody"></div>
+      <button class="button button-primary button-wide dialog-done" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <dialog id="choiceDialog" aria-labelledby="choiceTitle">
+    <div class="dialog-inner choice-inner">
+      <button class="dialog-close" id="choiceClose" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">Your complimentary service</p>
+      <h2 id="choiceTitle">Choose your preference</h2>
+      <p id="subQuestion"></p>
+      <div id="subOptions" class="pill-row"></div>
+      <p id="serviceConditions" class="scope-note"></p>
+      <p class="field-error" id="subError" role="alert" hidden>Please choose one option to continue.</p>
+      <button class="button button-primary button-wide" id="choiceContinue" type="button">Continue</button>
+    </div>
+  </dialog>
+
+  <dialog id="entryDialog" aria-labelledby="entryTitle">
+    <div class="dialog-inner">
+      <p class="eyebrow">Your invitation awaits</p>
+      <h2 id="entryTitle">A little care, just for you.</h2>
+      <p>Enter the five digits printed on your card to open your personal concierge experience.</p>
+      <form id="entryForm" novalidate>
+        <label class="field"><span>Privilege ID</span><div class="id-entry"><b>SYM-DIW26-</b><input id="cardDigits" inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" autocomplete="off" aria-label="Five-digit card number" placeholder="12345" required autofocus></div></label>
+        <p class="field-error" id="entryError" role="alert"></p>
+        <button class="button button-primary button-wide" id="lookupButton" type="submit">Open my privileges →</button>
+      </form>
+      <p><a class="whatsapp-help" href="https://wa.me/918657918455">Need a hand? Message your concierge</a></p>
+      <small>Keep your card ID private. It provides access to your recipient details.</small>
+    </div>
+  </dialog>
+  <noscript><p>Please enable JavaScript to use your card, or call +91 86579 18455.</p></noscript>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="service-content.js?v=20261029"></script>
+  <script src="app.js?v=20261029"></script>
+</body>
+</html>
